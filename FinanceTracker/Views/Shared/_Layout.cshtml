@@ -45,5 +45,17 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
+    @if (User.Identity.IsAuthenticated)
+    {
+        <h1>Hello, @User.Identity.Name!</h1>
+        <a asp-area="Identity" asp-page="/Account/Logout">Logout</a>
+    }
+    else
+    {
+        <h1>You are not logged in.</h1>
+    }
+
+    <a asp-area="Identity" asp-page="/Account/Login">Login</a>
+
 </body>
 </html>
