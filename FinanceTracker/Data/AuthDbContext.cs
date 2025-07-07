@@ -1,10 +1,11 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using FinanceTracker.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace FinanceTracker.Data
 {
-    public class AuthDbContext : IdentityDbContext<IdentityUser>
+    public class AuthDbContext : IdentityDbContext<ApplicationUser>
     {
         public AuthDbContext(DbContextOptions options) : base(options)
         {
@@ -13,5 +14,7 @@ namespace FinanceTracker.Data
         protected AuthDbContext()
         {
         }
+        public DbSet<Transaction> Transactions { get; set; }
+        public DbSet<TransactionCategory> TransactionCategories { get; set; }
     }
 }
