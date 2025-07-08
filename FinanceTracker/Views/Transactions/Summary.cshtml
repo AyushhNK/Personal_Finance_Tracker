@@ -1,0 +1,65 @@
+﻿@{
+    ViewData["Title"] = "Monthly Summary";
+    var summaryData = ViewBag.SummaryData as IEnumerable<dynamic>;
+
+    if (summaryData == null)
+    {
+        <p>No summary data available.</p>
+        return;
+    }
+
+    var months = summaryData.Select(d => $"{d.Month}/{d.Year}").Distinct().ToList();
+    var categories = summaryData.Select(d => d.Category).Distinct().ToList();
+}
+
+
+<h2>Monthly Summary</h2>
+
+<canvas id="summaryChart" width="800" height="400"></canvas>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const ctx = document.getElementById('summaryChart').getContext('2d');
+
+        const labels = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(months));
+
+        const datasets = [
+            @foreach (var category in categories)
+            {
+                    var categoryData = months.Select(m =>
+                            summaryData.Where(x => $"{x.Month}/{x.Year}" == m && x.Category == category)
+                                                  .Select(x => x.Total).FirstOrDefault()
+                    ).ToList();
+
+                    <text>
+                    {
+                        label: '@category',
+                        data: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(categoryData)),
+                        borderWidth: 1
+                    },
+                    </text>
+            }
+        ];
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top'
+                    },
+                    title: {
+                        display: true,
+                        text: 'Monthly Transaction Summary by Category'
+                    }
+                }
+            }
+        });
+    </script>
+}

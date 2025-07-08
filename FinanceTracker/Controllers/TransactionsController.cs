@@ -104,7 +104,7 @@ namespace FinanceTracker.Controllers
                 return NotFound();
             }
             ViewData["CategoryId"] = new SelectList(_context.TransactionCategories, "Id", "Id", transaction.CategoryId);
-            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id", transaction.UserId);
+            ViewData["UserId"] = _userManager.GetUserId(User);
             return View(transaction);
         }
 
@@ -141,7 +141,7 @@ namespace FinanceTracker.Controllers
                 return RedirectToAction(nameof(Index));
             }
             ViewData["CategoryId"] = new SelectList(_context.TransactionCategories, "Id", "Id", transaction.CategoryId);
-            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id", transaction.UserId);
+            ViewData["UserId"] = _userManager.GetUserId(User);
             return View(transaction);
         }
 
@@ -184,5 +184,37 @@ namespace FinanceTracker.Controllers
         {
             return _context.Transactions.Any(e => e.Id == id);
         }
+
+        [Authorize]
+        public async Task<IActionResult> Summary()
+        {
+            var userId = _userManager.GetUserId(User);
+
+            var summaryData = await _context.Transactions
+                .Include(t => t.Category)
+                .Where(t => t.UserId == userId)
+                .GroupBy(t => new
+                {
+                    t.Date.Year,
+                    t.Date.Month,
+                    Category = t.Category.Name
+                })
+                .Select(g => new
+                {
+                    Year = g.Key.Year,
+                    Month = g.Key.Month,
+                    Category = g.Key.Category,
+                    Total = (decimal)g.Sum(x => (double)x.Amount) // SQLite workaround
+                })
+                .OrderBy(g => g.Year).ThenBy(g => g.Month)
+                .ToListAsync();
+
+            ViewBag.SummaryData = summaryData;
+
+            return View();
+        }
+
+
+
     }
 }
