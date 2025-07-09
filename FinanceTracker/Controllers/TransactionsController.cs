@@ -26,9 +26,17 @@ namespace FinanceTracker.Controllers
         // GET: Transactions
         public async Task<IActionResult> Index()
         {
-            var authDbContext = _context.Transactions.Include(t => t.Category).Include(t => t.User);
-            return View(await authDbContext.ToListAsync());
+            var userId = _userManager.GetUserId(User); // Get current logged-in user's ID
+
+            var transactions = await _context.Transactions
+                .Include(t => t.Category)
+                .Where(t => t.UserId == userId)
+                .Include(t=>t.User)
+                .ToListAsync();
+
+            return View(transactions);
         }
+
 
         // GET: Transactions/Details/5
         public async Task<IActionResult> Details(int? id)
@@ -53,10 +61,21 @@ namespace FinanceTracker.Controllers
         // GET: Transactions/Create
         public IActionResult Create()
         {
+            // Get the currently logged-in user's ID
+            var userId = _userManager.GetUserId(User);
+
+            // Pass the category list for dropdown
             ViewData["CategoryId"] = new SelectList(_context.TransactionCategories, "Id", "Id");
-            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id");
-            return View();
+
+            // Instead of a dropdown for UserId, just pass the user ID directly
+            var model = new Transaction
+            {
+                UserId = userId // pre-fill the form field
+            };
+
+            return View(model);
         }
+
 
         // POST: Transactions/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
@@ -90,60 +109,56 @@ namespace FinanceTracker.Controllers
             return View(transaction);
         }
 
-        // GET: Transactions/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
-            {
                 return NotFound();
-            }
 
             var transaction = await _context.Transactions.FindAsync(id);
             if (transaction == null)
-            {
                 return NotFound();
-            }
+
+            // Load dropdown for categories
             ViewData["CategoryId"] = new SelectList(_context.TransactionCategories, "Id", "Id", transaction.CategoryId);
-            ViewData["UserId"] = _userManager.GetUserId(User);
+
+            // Optional: Set userId again from logged-in user
+            transaction.UserId = _userManager.GetUserId(User);
+
             return View(transaction);
         }
 
         // POST: Transactions/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Description,Amount,Date,CategoryId,UserId")] Transaction transaction)
         {
             if (id != transaction.Id)
-            {
                 return NotFound();
-            }
-
+            transaction.UserId = _userManager.GetUserId(User);
             if (ModelState.IsValid)
             {
                 try
                 {
+
                     _context.Update(transaction);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!TransactionExists(transaction.Id))
-                    {
+                    if (!_context.Transactions.Any(e => e.Id == transaction.Id))
                         return NotFound();
-                    }
                     else
-                    {
                         throw;
-                    }
                 }
+
                 return RedirectToAction(nameof(Index));
             }
+
             ViewData["CategoryId"] = new SelectList(_context.TransactionCategories, "Id", "Id", transaction.CategoryId);
-            ViewData["UserId"] = _userManager.GetUserId(User);
             return View(transaction);
         }
+
+
 
         // GET: Transactions/Delete/5
         public async Task<IActionResult> Delete(int? id)
