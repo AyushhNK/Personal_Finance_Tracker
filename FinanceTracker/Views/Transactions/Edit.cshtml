@@ -4,53 +4,69 @@
     ViewData["Title"] = "Edit";
 }
 
-<h1>Edit</h1>
+<h1 class="text-3xl font-semibold mb-6 text-gray-800">Edit Transaction</h1>
 
-<h4>Transaction</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Id" />
-            <div class="form-group">
-                <label asp-for="Description" class="control-label"></label>
-                <input asp-for="Description" class="form-control" />
-                <span asp-validation-for="Description" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Amount" class="control-label"></label>
-                <input asp-for="Amount" class="form-control" />
-                <span asp-validation-for="Amount" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Date" class="control-label"></label>
-                <input asp-for="Date" class="form-control" />
-                <span asp-validation-for="Date" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="CategoryId" class="control-label"></label>
-                <select asp-for="CategoryId" class="form-control" asp-items="ViewBag.CategoryId"></select>
-                <span asp-validation-for="CategoryId" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="UserId" class="control-label"></label>
-                <input asp-for="UserId" class="form-control" readonly />
-                <input asp-for="UserId" type="hidden" /> <!-- Ensures submission -->
-                <span asp-validation-for="UserId" class="text-danger"></span>
-            </div>
+<h4 class="text-lg font-medium mb-4 text-gray-700">Transaction</h4>
+<hr class="mb-8 border-gray-300" />
 
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
-            </div>
-        </form>
-    </div>
+<div class="max-w-md">
+    <form asp-action="Edit" novalidate>
+        <div asp-validation-summary="ModelOnly" class="mb-4 text-red-600 font-semibold"></div>
+
+        <input type="hidden" asp-for="Id" />
+
+        <div class="mb-6">
+            <label asp-for="Description" class="block mb-1 font-semibold text-gray-700"></label>
+            <input asp-for="Description"
+                   class="w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            <span asp-validation-for="Description" class="text-red-600 text-sm mt-1 block"></span>
+        </div>
+
+        <div class="mb-6">
+            <label asp-for="Amount" class="block mb-1 font-semibold text-gray-700"></label>
+            <input asp-for="Amount" type="number" step="0.01"
+                   class="w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            <span asp-validation-for="Amount" class="text-red-600 text-sm mt-1 block"></span>
+        </div>
+
+        <div class="mb-6">
+            <label asp-for="Date" class="block mb-1 font-semibold text-gray-700"></label>
+            <input asp-for="Date" type="date"
+                   class="w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            <span asp-validation-for="Date" class="text-red-600 text-sm mt-1 block"></span>
+        </div>
+
+        <div class="mb-6">
+            <label asp-for="CategoryId" class="block mb-1 font-semibold text-gray-700"></label>
+            <select asp-for="CategoryId" asp-items="ViewBag.CategoryId"
+                    class="w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </select>
+            <span asp-validation-for="CategoryId" class="text-red-600 text-sm mt-1 block"></span>
+        </div>
+
+        <div class="mb-6">
+            <label asp-for="UserId" class="block mb-1 font-semibold text-gray-700"></label>
+            <input asp-for="UserId" readonly
+                   class="w-full rounded border border-gray-200 bg-gray-100 px-3 py-2 cursor-not-allowed" />
+            <input asp-for="UserId" type="hidden" /> <!-- For form submission -->
+            <span asp-validation-for="UserId" class="text-red-600 text-sm mt-1 block"></span>
+        </div>
+
+        <div>
+            <button type="submit"
+                    class="bg-indigo-600 text-white px-5 py-2 rounded shadow hover:bg-indigo-700 transition font-semibold">
+                Save
+            </button>
+        </div>
+    </form>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
+<div class="mt-6">
+    <a asp-action="Index" class="text-indigo-600 hover:underline">← Back to List</a>
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

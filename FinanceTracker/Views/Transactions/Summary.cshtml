@@ -4,43 +4,40 @@
 
     if (summaryData == null)
     {
-        <p>No summary data available.</p>
+        <p class="text-gray-600 italic">No summary data available.</p>
         return;
     }
 
     var months = summaryData.Select(d => $"{d.Month}/{d.Year}").Distinct().ToList();
     var categories = summaryData.Select(d => d.Category).Distinct().ToList();
+
+    // Prepare datasets for Chart.js
+    var datasets = categories.Select(category => new
+    {
+        label = category,
+        data = months.Select(m =>
+            summaryData.FirstOrDefault(x => $"{x.Month}/{x.Year}" == m && x.Category == category)?.Total ?? 0
+        ).ToList(),
+        borderWidth = 1
+    }).ToList();
+
+    var datasetsJson = Newtonsoft.Json.JsonConvert.SerializeObject(datasets);
+    var monthsJson = Newtonsoft.Json.JsonConvert.SerializeObject(months);
 }
 
+<h2 class="text-2xl font-bold mb-6 text-gray-800">Monthly Summary</h2>
 
-<h2>Monthly Summary</h2>
-
-<canvas id="summaryChart" width="800" height="400"></canvas>
+<div class="max-w-4xl mx-auto bg-white p-6 rounded shadow">
+    <canvas id="summaryChart" width="800" height="400" class="w-full h-96"></canvas>
+</div>
 
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         const ctx = document.getElementById('summaryChart').getContext('2d');
 
-        const labels = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(months));
-
-        const datasets = [
-            @foreach (var category in categories)
-            {
-                    var categoryData = months.Select(m =>
-                            summaryData.Where(x => $"{x.Month}/{x.Year}" == m && x.Category == category)
-                                                  .Select(x => x.Total).FirstOrDefault()
-                    ).ToList();
-
-                    <text>
-                    {
-                        label: '@category',
-                        data: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(categoryData)),
-                        borderWidth: 1
-                    },
-                    </text>
-            }
-        ];
+        const labels = @Html.Raw(monthsJson);
+        const datasets = @Html.Raw(datasetsJson);
 
         new Chart(ctx, {
             type: 'bar',
